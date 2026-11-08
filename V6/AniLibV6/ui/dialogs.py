@@ -36,7 +36,7 @@ from PySide6.QtWidgets import (
 )
 
 from AniLibV6.anilist import anilist_request, media_title
-from AniLibV6.config import APP_DIR, APP_VERSION, DEFAULT_UPDATE_URL, SEARCH_Q
+from AniLibV6.config import APP_DIR, APP_VERSION, SEARCH_Q
 from AniLibV6.theme import T, qc, ui_fm, ui_font
 from AniLibV6.ui.common import AA, SmoothScrollArea
 from AniLibV6.ui.components import AppleSwitch
@@ -449,7 +449,7 @@ class SettingsDialog(QDialog):
         c_lay.addWidget(kb_card)
 
         # UPDATES (OTA)
-        add_section_header("Automatic Updates (OTA)")
+        add_section_header("Automatic Updates")
         upd_card = SettingsCard()
 
         self.sw_autoupd = AppleSwitch(checked=bool(self.win.cfg["ui"].get("auto_update", True)))
@@ -461,53 +461,9 @@ class SettingsDialog(QDialog):
         )
         upd_card.add_row(
             "Check & Install Updates on Startup",
-            "Automatically fetch lightweight ~35 KB code updates in the background when connected to the internet",
+            "Automatically fetch lightweight code updates in the background when connected to the internet",
             self.sw_autoupd,
         )
-
-        upd_card.add_separator()
-        self.edit_upd_url = QLineEdit(self.win.cfg["ui"].get("update_url", DEFAULT_UPDATE_URL))
-        self.edit_upd_url.setPlaceholderText("owner/repo  or  https://.../version.json")
-        self.edit_upd_url.setFixedWidth(280)
-        self.edit_upd_url.setFixedHeight(32)
-        self.edit_upd_url.textChanged.connect(
-            lambda txt: (
-                self.win.cfg["ui"].__setitem__("update_url", txt.strip()),
-                self.win.save_all(),
-            )
-        )
-        upd_card.add_row(
-            "Update Source (GitHub Repo or URL)",
-            "GitHub repository ('owner/repo') or direct URL to version.json manifest",
-            self.edit_upd_url,
-        )
-
-        upd_card.add_separator()
-        upd_btns = QWidget()
-        ubl = QHBoxLayout(upd_btns)
-        ubl.setContentsMargins(0, 0, 0, 0)
-        ubl.setSpacing(8)
-
-        btn_check_upd = QPushButton("Check Now")
-        btn_check_upd.setObjectName("glassPill")
-        btn_check_upd.setFixedHeight(32)
-        btn_check_upd.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_check_upd.clicked.connect(lambda: (self.close(), self.win.check_for_updates(manual=True)))
-
-        btn_build_upd = QPushButton("Build ~35 KB Release…")
-        btn_build_upd.setObjectName("glassPill")
-        btn_build_upd.setFixedHeight(32)
-        btn_build_upd.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_build_upd.setToolTip("Package current Python code into AniLibV6_update.zip + version.json for publishing")
-        btn_build_upd.clicked.connect(lambda: (self.close(), self.win.export_update_bundle()))
-
-        ubl.addWidget(btn_check_upd)
-        ubl.addWidget(btn_build_upd)
-
-        ver_status = f"Current: v{APP_VERSION}"
-        if getattr(self.win, "pending_update_ver", None):
-            ver_status += f"  ·  v{self.win.pending_update_ver} ready (restart to apply)"
-        upd_card.add_row("OTA Package Manager", ver_status, upd_btns)
         c_lay.addWidget(upd_card)
 
         # ABOUT
