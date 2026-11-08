@@ -1,10 +1,12 @@
 """
 AniLib V6 — Smart Thin Launcher & OTA Hot-Loader
-Loads the newest OTA-updated AniLibV6 package (~35 KB) from ~/.anime_library/updates/current
+Loads the newest OTA-updated AniLibV6 package (~84 KB) from ~/.anime_library/updates/current
 if available and newer than the bundled version, falling back to the local/frozen package.
+Works identically in both Python source mode and compiled PyInstaller .exe mode.
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -12,6 +14,28 @@ import re
 import sys
 
 BUNDLED_VERSION = "6.0.0"
+
+
+class _OtaFinder:
+    """MetaPathFinder that intercepts AniLibV6 imports so PyInstaller .exe loads OTA .py files first."""
+
+    def __init__(self, ota_root: Path) -> None:
+        self.ota_root = ota_root
+
+    def find_spec(self, fullname: str, path=None, target=None):
+        if fullname == "AniLibV6" or fullname.startswith("AniLibV6."):
+            rel_parts = fullname.split(".")
+            pkg_init = self.ota_root.joinpath(*rel_parts, "__init__.py")
+            if pkg_init.is_file():
+                return importlib.util.spec_from_file_location(
+                    fullname,
+                    pkg_init,
+                    submodule_search_locations=[str(pkg_init.parent)],
+                )
+            mod_file = self.ota_root.joinpath(*rel_parts).with_suffix(".py")
+            if mod_file.is_file():
+                return importlib.util.spec_from_file_location(fullname, mod_file)
+        return None
 
 
 def _parse_ver(v: str | None) -> tuple[int, ...]:
@@ -29,12 +53,12 @@ def _get_app_dir() -> Path:
 
 
 def _activate_ota_if_newer(root: Path) -> None:
-    """Prepend ~/.anime_library/updates/current to sys.path if its version > bundled version."""
+    """Install _OtaFinder at the front of sys.meta_path if an OTA update is newer than bundled."""
     try:
-        local_init = root / "AniLibV6" / "__init__.py"
         local_ver = BUNDLED_VERSION
-        if local_init.is_file():
-            m = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', local_init.read_text(encoding="utf-8"))
+        local_cfg = root / "AniLibV6" / "config.py"
+        if local_cfg.is_file():
+            m = re.search(r'APP_VERSION\s*=\s*["\']([^"\']+)["\']', local_cfg.read_text(encoding="utf-8"))
             if m:
                 local_ver = m.group(1)
 
@@ -48,7 +72,7 @@ def _activate_ota_if_newer(root: Path) -> None:
             ota_ver = str(meta.get("version") or "")
             if _parse_ver(ota_ver) > _parse_ver(local_ver):
                 sys.path.insert(0, str(current_dir))
-                return
+                sys.meta_path.insert(0, _OtaFinder(current_dir))
     except Exception:
         pass
 

@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -204,16 +205,17 @@ def apply_update_package(zip_bytes: bytes, version: str, expected_sha256: str = 
         (UPDATES_DIR / "active.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
         # Also sync local source folder if running from unpacked source and writable
-        local_pkg = Path(__file__).resolve().parent
-        if local_pkg.name == "AniLibV6" and not str(local_pkg).startswith(str(UPDATES_DIR)):
-            try:
-                for src_file in target_pkg.rglob("*.py"):
-                    rel = src_file.relative_to(target_pkg)
-                    dst_file = local_pkg / rel
-                    dst_file.parent.mkdir(parents=True, exist_ok=True)
-                    dst_file.write_bytes(src_file.read_bytes())
-            except OSError:
-                pass
+        if not getattr(sys, "frozen", False):
+            local_pkg = Path(__file__).resolve().parent
+            if local_pkg.name == "AniLibV6" and not str(local_pkg).startswith(str(UPDATES_DIR)):
+                try:
+                    for src_file in target_pkg.rglob("*.py"):
+                        rel = src_file.relative_to(target_pkg)
+                        dst_file = local_pkg / rel
+                        dst_file.parent.mkdir(parents=True, exist_ok=True)
+                        dst_file.write_bytes(src_file.read_bytes())
+                except OSError:
+                    pass
 
         return target_root
     finally:
