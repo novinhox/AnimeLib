@@ -1,0 +1,15 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+.ruff_cache/
+
+# Local runtime data & caches
+.anime_library/
+dummy/
+
+# Large compiled executables (keep repo lightweight for fast OTA updates)
+*.exe
+*.spec
+build/
+dist/
