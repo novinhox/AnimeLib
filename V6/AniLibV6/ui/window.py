@@ -384,6 +384,7 @@ class MainWindow(QMainWindow):
         self.root.intro = self.intro
         self.intro.setGeometry(0, 0, self.root.width(), self.root.height())
         if T.animations:
+            self.intro.finished.connect(self.update_nav_resume)
             QTimer.singleShot(30, self.intro.start)
         else:
             self.intro.hide()
@@ -913,8 +914,8 @@ class MainWindow(QMainWindow):
         self.rebuild_genre_chips()
         self.rebuild_home()
         self.refresh_browse()
+        self.update_nav_resume()
         if not self._restored:
-            self._restored = True
             self.restore_page()
         if jobs:
             self.queue_jobs(jobs)
@@ -997,6 +998,7 @@ class MainWindow(QMainWindow):
             self.show_browse(push=False)
         else:
             self.show_home()
+        self.update_nav_resume()
 
     def _rebuild_media_index(self) -> None:
         self.by_media_id = {}
@@ -1374,6 +1376,7 @@ class MainWindow(QMainWindow):
             self.b_fav_only = fav_only
         self._switch(1)
         self.refresh_browse()
+        self.update_nav_resume()
 
     def open_entry(self, entry: Entry) -> None:
         self.show_detail(entry.path)
@@ -1712,6 +1715,7 @@ class MainWindow(QMainWindow):
 
         self.fresh.clear()
         self.home_lay.addStretch(1)
+        self.update_nav_resume()
 
     def on_status_chip(self, i: int) -> None:
         self.b_status = i
@@ -1856,6 +1860,7 @@ class MainWindow(QMainWindow):
         self._switch(2)
         if animate and T.animations:
             self.d_banner.zoom_in()
+        self.update_nav_resume()
 
     def _on_ep_filter(self, txt: str) -> None:
         self.d_ep_query = norm(txt)

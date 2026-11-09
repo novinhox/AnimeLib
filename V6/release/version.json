@@ -1,8 +1,8 @@
 {
-  "version": "6.0.1",
+  "version": "6.0.2",
   "url": "AniLibV6_update.zip",
-  "sha256": "851f2915657644245aa6d0362d85e2d30bc103604d4558b5bc9a5f071a2eec81",
-  "size": 85757,
-  "notes": "AniLib V6 v6.0.1 OTA Code Update",
-  "published_at": "2026-11-08T18:55:50Z"
+  "sha256": "5d5ce3bc4cd13059e72392ac95c3088c911b17a0692434058dc4f9bbfaf33062",
+  "size": 85772,
+  "notes": "AniLib V6 v6.0.2 OTA Code Update",
+  "published_at": "2026-11-09T22:03:21Z"
 }

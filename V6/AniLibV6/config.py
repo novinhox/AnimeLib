@@ -39,7 +39,7 @@ UPDATES_DIR = APP_DIR / "updates"
 CONFIG_FILE = APP_DIR / "config.json"
 CACHE_FILE = APP_DIR / "cache.json"
 
-APP_VERSION = "6.0.1"
+APP_VERSION = "6.0.2"
 DEFAULT_UPDATE_URL = os.environ.get("ANIME_LIBRARY_UPDATE_URL", "novinhox/AnimeLib")
 
 def ensure_dirs() -> None:
